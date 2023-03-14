@@ -3,9 +3,11 @@ import { Cliente } from './Cliente';
 import { CLIENTES } from './clientes.json';
 import { Observable, catchError, throwError } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { map } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
+import { formatDate, DatePipe } from '@angular/common';
+
 
 @Injectable({
   providedIn: 'root'
@@ -18,11 +20,38 @@ export class ClienteService {
     private router: Router) { }
 
   
-  getClientes() : Observable<Cliente[]> {
+  getClientes(page: number) : Observable<any[]> {
     //return of(CLIENTES); //opcion 1
     //return this.http.get<Cliente[]>(this.urlEndPoint); //opción 2
-    return this.http.get(this.urlEndPoint).pipe(
-      map( (response) => response as Cliente[])
+    return this.http.get(this.urlEndPoint + '/page/' + page).pipe(
+      tap( (response: any) => {
+        let clientes = (response.content as Cliente[]);
+        console.log('ClienteService: tap 1');
+        clientes.forEach( cliente => {
+          console.log(cliente.nombre);
+        })
+      }),
+      map( (response: any) => {
+
+        (response.content as Cliente[]).map(cliente => {
+          cliente.nombre = cliente.nombre.toUpperCase();
+
+          //opción 1
+          //cliente.createAt = formatDate(cliente.createAt, 'dd-MM-yyyy', "en-US");
+
+          //opción 2
+          let datePipe = new DatePipe('es-CO');
+          //cliente.createAt = datePipe.transform(cliente.createAt, 'fullDate');//'EEE dd, MMM yyyy' //'EEEE dd, MMMM yyyy'
+          return cliente;
+        });
+        return response;
+      }),
+      tap( (response: any) => {
+        console.log('ClienteService: tap 2');
+        (response.content as Cliente[]).forEach( cliente => {
+          console.log(cliente.nombre);
+        })
+      })
     ); //opción 3
   }
 
