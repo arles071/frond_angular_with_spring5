@@ -7,6 +7,7 @@ import { map, tap } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
 import { formatDate, DatePipe } from '@angular/common';
+import { Region } from './Region';
 
 
 @Injectable({
@@ -119,6 +120,10 @@ export class ClienteService {
     });
 
     return this.http.request(req);
+  }
+
+  getRegiones(): Observable<Region[]>{
+    return this.http.get<Region[]>(this.urlEndPoint + '/regiones');
   }
   
 }
